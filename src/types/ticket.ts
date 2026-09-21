@@ -29,3 +29,6 @@ export type NewTicketInput = Pick<
 
 /** Fields the agent provides when adding a comment. */
 export type NewCommentInput = Pick<Comment, 'author' | 'text'>
+
+/** Status filter for the ticket list. */
+export type TicketFilter = 'all' | TicketStatus

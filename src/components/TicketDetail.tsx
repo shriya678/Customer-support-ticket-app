@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { NewCommentInput, Ticket } from '../types/ticket'
 import { formatDateTime } from '../utils/format'
 import CommentForm from './CommentForm'
@@ -8,9 +9,22 @@ interface TicketDetailProps {
   ticket: Ticket
   onBack: () => void
   onAddComment: (input: NewCommentInput) => void
+  /** Resolves the ticket. May throw if storage fails; the view shows the error. */
+  onResolve: () => void
 }
 
-function TicketDetail({ ticket, onBack, onAddComment }: TicketDetailProps) {
+function TicketDetail({ ticket, onBack, onAddComment, onResolve }: TicketDetailProps) {
+  const [resolveError, setResolveError] = useState('')
+
+  function handleResolve() {
+    setResolveError('')
+    try {
+      onResolve()
+    } catch {
+      setResolveError('Could not resolve the ticket. Browser storage may be full or unavailable.')
+    }
+  }
+
   return (
     <article>
       <button type="button" className="btn" onClick={onBack}>
@@ -42,6 +56,17 @@ function TicketDetail({ ticket, onBack, onAddComment }: TicketDetailProps) {
 
         <h3>Description</h3>
         <p className="description">{ticket.description}</p>
+
+        {ticket.status === 'open' && (
+          <button type="button" className="btn btn-resolve" onClick={handleResolve}>
+            Resolve ticket
+          </button>
+        )}
+        {resolveError && (
+          <p className="banner banner-error" role="alert">
+            {resolveError}
+          </p>
+        )}
       </div>
 
       <section className="card">

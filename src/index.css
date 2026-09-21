@@ -73,6 +73,41 @@ body {
   border-radius: var(--radius);
 }
 
+.ticket-row-open {
+  border-left: 4px solid var(--color-open);
+}
+
+.ticket-row-resolved {
+  border-left: 4px solid var(--color-resolved);
+  background: #fafafa;
+}
+
+.ticket-row-resolved .ticket-row-title {
+  color: var(--color-muted);
+}
+
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-tab {
+  padding: 6px 14px;
+  font: inherit;
+  cursor: pointer;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.filter-tab-active {
+  color: #fff;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
 .ticket-row:hover,
 .ticket-row:focus-visible {
   border-color: var(--color-primary);
@@ -243,6 +278,13 @@ body {
   color: #fff;
   background: var(--color-primary);
   border-color: var(--color-primary);
+}
+
+/* Must stay after .btn so its colors win. */
+.btn-resolve {
+  color: #fff;
+  background: var(--color-resolved);
+  border-color: var(--color-resolved);
 }
 
 .banner {

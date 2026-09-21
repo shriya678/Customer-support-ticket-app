@@ -1,6 +1,7 @@
 import type { Comment, NewCommentInput, NewTicketInput, Ticket } from '../types/ticket'
 
 const STORAGE_KEY = 'support-tickets:v1'
+const AUTHOR_KEY = 'support-tickets:comment-author'
 
 /** Fields of a ticket that callers may change through updateTicket. */
 export type TicketChanges = Partial<
@@ -98,4 +99,21 @@ export function resolveTicket(id: string): Ticket | undefined {
     const now = new Date().toISOString()
     return { ...ticket, status: 'resolved', resolvedAt: now, updatedAt: now }
   })
+}
+
+/** The author name last used for a comment, so the agent doesn't retype it. */
+export function getSavedAuthor(): string {
+  try {
+    return localStorage.getItem(AUTHOR_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+export function saveAuthor(author: string): void {
+  try {
+    localStorage.setItem(AUTHOR_KEY, author)
+  } catch {
+    // Remembering the name is a convenience; ignore storage failures.
+  }
 }

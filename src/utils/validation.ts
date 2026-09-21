@@ -1,6 +1,7 @@
-import type { NewTicketInput } from '../types/ticket'
+import type { NewCommentInput, NewTicketInput } from '../types/ticket'
 
 export type TicketFormErrors = Partial<Record<keyof NewTicketInput, string>>
+export type CommentFormErrors = Partial<Record<keyof NewCommentInput, string>>
 
 export const TITLE_MAX_LENGTH = 100
 const PHONE_MIN_DIGITS = 7
@@ -38,5 +39,12 @@ export function validateTicketInput(input: NewTicketInput): TicketFormErrors {
   const phoneError = validatePhoneNumber(input.phoneNumber)
   if (phoneError) errors.phoneNumber = phoneError
 
+  return errors
+}
+
+export function validateCommentInput(input: NewCommentInput): CommentFormErrors {
+  const errors: CommentFormErrors = {}
+  if (!input.author.trim()) errors.author = 'Your name is required.'
+  if (!input.text.trim()) errors.text = 'Comment cannot be empty.'
   return errors
 }

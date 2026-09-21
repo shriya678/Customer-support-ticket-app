@@ -2,8 +2,8 @@ import { useState } from 'react'
 import TicketDetail from './components/TicketDetail'
 import TicketForm from './components/TicketForm'
 import TicketList from './components/TicketList'
-import { createTicket, getTickets } from './services/ticketService'
-import type { NewTicketInput, Ticket } from './types/ticket'
+import { addComment, createTicket, getTickets } from './services/ticketService'
+import type { NewCommentInput, NewTicketInput, Ticket } from './types/ticket'
 
 type View = { name: 'list' } | { name: 'create' } | { name: 'detail'; ticketId: string }
 
@@ -33,6 +33,11 @@ function App() {
     setView({ name: 'detail', ticketId })
   }
 
+  function handleAddComment(ticketId: string, input: NewCommentInput) {
+    if (!addComment(ticketId, input)) throw new Error('Ticket not found')
+    setTickets(getTickets())
+  }
+
   function renderDetail(ticketId: string) {
     const ticket = tickets.find((t) => t.id === ticketId)
     if (!ticket) {
@@ -46,7 +51,13 @@ function App() {
         </div>
       )
     }
-    return <TicketDetail ticket={ticket} onBack={showList} />
+    return (
+      <TicketDetail
+        ticket={ticket}
+        onBack={showList}
+        onAddComment={(input) => handleAddComment(ticket.id, input)}
+      />
+    )
   }
 
   return (

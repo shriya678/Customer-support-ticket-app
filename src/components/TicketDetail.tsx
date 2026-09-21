@@ -1,14 +1,16 @@
-import type { Ticket } from '../types/ticket'
+import type { NewCommentInput, Ticket } from '../types/ticket'
 import { formatDateTime } from '../utils/format'
+import CommentForm from './CommentForm'
 import CommentThread from './CommentThread'
 import StatusBadge from './StatusBadge'
 
 interface TicketDetailProps {
   ticket: Ticket
   onBack: () => void
+  onAddComment: (input: NewCommentInput) => void
 }
 
-function TicketDetail({ ticket, onBack }: TicketDetailProps) {
+function TicketDetail({ ticket, onBack, onAddComment }: TicketDetailProps) {
   return (
     <article>
       <button type="button" className="btn" onClick={onBack}>
@@ -45,6 +47,7 @@ function TicketDetail({ ticket, onBack }: TicketDetailProps) {
       <section className="card">
         <h3>Comments ({ticket.comments.length})</h3>
         <CommentThread comments={ticket.comments} />
+        <CommentForm onSubmit={onAddComment} />
       </section>
     </article>
   )

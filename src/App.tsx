@@ -1,60 +1,75 @@
 import { useState } from 'react'
+import TicketDetail from './components/TicketDetail'
 import TicketForm from './components/TicketForm'
+import TicketList from './components/TicketList'
 import { createTicket, getTickets } from './services/ticketService'
 import type { NewTicketInput, Ticket } from './types/ticket'
 
-type View = 'home' | 'create'
+type View = { name: 'list' } | { name: 'create' } | { name: 'detail'; ticketId: string }
 
 function App() {
-  const [view, setView] = useState<View>('home')
+  const [view, setView] = useState<View>({ name: 'list' })
   const [tickets, setTickets] = useState<Ticket[]>(getTickets)
   const [createdTicket, setCreatedTicket] = useState<Ticket | null>(null)
+
+  function showList() {
+    setView({ name: 'list' })
+  }
 
   function handleCreate(input: NewTicketInput) {
     const ticket = createTicket(input)
     setTickets(getTickets())
     setCreatedTicket(ticket)
-    setView('home')
+    showList()
   }
 
   function openCreateForm() {
     setCreatedTicket(null)
-    setView('create')
+    setView({ name: 'create' })
+  }
+
+  function openTicket(ticketId: string) {
+    setCreatedTicket(null)
+    setView({ name: 'detail', ticketId })
+  }
+
+  function renderDetail(ticketId: string) {
+    const ticket = tickets.find((t) => t.id === ticketId)
+    if (!ticket) {
+      return (
+        <div className="card empty-state">
+          <p>Ticket not found.</p>
+          <p className="muted">It may have been removed from browser storage.</p>
+          <button type="button" className="btn" onClick={showList}>
+            Back to tickets
+          </button>
+        </div>
+      )
+    }
+    return <TicketDetail ticket={ticket} onBack={showList} />
   }
 
   return (
     <div className="app">
       <header className="app-header">
         <h1>Customer Support Tickets</h1>
-        {view === 'home' && (
+        {view.name === 'list' && (
           <button type="button" className="btn btn-primary" onClick={openCreateForm}>
             New ticket
           </button>
         )}
       </header>
       <main>
-        {view === 'create' && (
-          <TicketForm onSubmit={handleCreate} onCancel={() => setView('home')} />
-        )}
-        {view === 'home' && (
+        {view.name === 'create' && <TicketForm onSubmit={handleCreate} onCancel={showList} />}
+        {view.name === 'detail' && renderDetail(view.ticketId)}
+        {view.name === 'list' && (
           <>
             {createdTicket && (
               <p className="banner banner-success" role="status">
                 Ticket created: <strong>{createdTicket.title}</strong>
               </p>
             )}
-            {/* Minimal read-back of saved tickets; replaced by the full list in Iteration 3. */}
-            {tickets.length === 0 ? (
-              <p className="muted">No tickets yet.</p>
-            ) : (
-              <ul className="simple-list">
-                {tickets.map((ticket) => (
-                  <li key={ticket.id}>
-                    <strong>{ticket.title}</strong> — {ticket.customerName}, order {ticket.orderNumber}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <TicketList tickets={tickets} onOpen={openTicket} />
           </>
         )}
       </main>

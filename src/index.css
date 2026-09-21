@@ -108,12 +108,6 @@ body {
   border-color: var(--color-primary);
 }
 
-.btn-resolve {
-  color: #fff;
-  background: var(--color-resolved);
-  border-color: var(--color-resolved);
-}
-
 .ticket-row:hover,
 .ticket-row:focus-visible {
   border-color: var(--color-primary);
@@ -284,6 +278,13 @@ body {
   color: #fff;
   background: var(--color-primary);
   border-color: var(--color-primary);
+}
+
+/* Must stay after .btn so its colors win. */
+.btn-resolve {
+  color: #fff;
+  background: var(--color-resolved);
+  border-color: var(--color-resolved);
 }
 
 .banner {

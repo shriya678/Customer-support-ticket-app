@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import TicketForm from './components/TicketForm'
-import { createTicket } from './services/ticketService'
+import { createTicket, getTickets } from './services/ticketService'
 import type { NewTicketInput, Ticket } from './types/ticket'
 
 type View = 'home' | 'create'
 
 function App() {
   const [view, setView] = useState<View>('home')
+  const [tickets, setTickets] = useState<Ticket[]>(getTickets)
   const [createdTicket, setCreatedTicket] = useState<Ticket | null>(null)
 
   function handleCreate(input: NewTicketInput) {
     const ticket = createTicket(input)
+    setTickets(getTickets())
     setCreatedTicket(ticket)
     setView('home')
   }
@@ -41,8 +43,18 @@ function App() {
                 Ticket created: <strong>{createdTicket.title}</strong>
               </p>
             )}
-            {/* Replaced by the ticket list in Iteration 3. */}
-            <p className="muted">The ticket list is coming in the next iteration.</p>
+            {/* Minimal read-back of saved tickets; replaced by the full list in Iteration 3. */}
+            {tickets.length === 0 ? (
+              <p className="muted">No tickets yet.</p>
+            ) : (
+              <ul className="simple-list">
+                {tickets.map((ticket) => (
+                  <li key={ticket.id}>
+                    <strong>{ticket.title}</strong> — {ticket.customerName}, order {ticket.orderNumber}
+                  </li>
+                ))}
+              </ul>
+            )}
           </>
         )}
       </main>

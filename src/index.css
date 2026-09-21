@@ -49,6 +49,10 @@ body {
   color: var(--color-muted);
 }
 
+.simple-list {
+  padding-left: 20px;
+}
+
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);

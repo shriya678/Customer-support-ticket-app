@@ -1,21 +1,22 @@
 # Customer Support Ticket App
 
 ## Overview
-A small web app where a support agent tracks customer issues as tickets: create, view, comment, and resolve. Built as a take-home assessment.
-
-> **Status:** Iteration 0 (project setup). Features are being added incrementally.
+A small web app where a support agent tracks customer issues as tickets: create them, discuss them in a comment thread, and mark them resolved. Built as a take-home assessment; there is no backend, and data is kept in the browser.
 
 ## Features
-Planned (see [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)):
-- Create a ticket (title, description, customer name, order number, phone number)
-- List tickets and open a ticket's details
-- Comment thread (author, text, timestamp)
-- Resolve tickets; filter by All / Open / Resolved
+- **Create a ticket** with title, description, customer name, order number and phone number, with validation
+- **Ticket list** showing title, customer, order number, status and created date, newest first
+- **Ticket details** with all fields and a comment thread
+- **Comments** with author, text and timestamp, shown chronologically; the author name is remembered between comments
+- **Resolve** an open ticket; open and resolved tickets are clearly distinguished (badge and row accent)
+- **Filter** the list by All / Open / Resolved, with counts
+- **Persistence** across page refreshes via `localStorage`
 
 ## Tech Stack
-React, TypeScript, Vite, oxlint, localStorage. No other runtime dependencies.
+React 19, TypeScript, Vite, oxlint. No other runtime dependencies (no router, UI library or state library).
 
 ## Getting Started
+Requires Node.js 20.19+ (or 22.12+) and npm.
 
 ### Installation
 ```bash
@@ -26,50 +27,74 @@ npm install
 ```bash
 npm run dev
 ```
+Open the URL printed in the terminal (use `localhost`; see Known Limitations).
 
 ### Build
 ```bash
-npm run build     # type-check + production build
-npm run preview   # serve the build
-npm run lint
+npm run build     # type-check + production build into dist/
+npm run preview   # serve the production build
+npm run lint      # oxlint
 ```
 
 ## Project Structure
 ```
 src/
-  types/        data models
-  services/     localStorage-backed ticket operations
-  utils/        validation and formatting helpers
-  hooks/        React hooks
-  components/   UI components
+  types/        Ticket, Comment and related types
+  services/     ticketService.ts: all localStorage access and ticket operations
+  utils/        validation.ts (form rules), format.ts (dates)
+  components/   TicketForm, TicketList, StatusFilter, TicketDetail,
+                CommentThread, CommentForm, StatusBadge
+  App.tsx       view switching (list | create | detail), tickets and filter state
 docs/           requirements, SRS, approach, ER diagram
 ```
 
 ## Architecture
-See [docs/APPROACH.md](docs/APPROACH.md).
+`App` holds the tickets and the current view in React state and passes data and callbacks to small components. Components never touch `localStorage`; every read and write goes through `ticketService`, and `App` re-reads the tickets after each change. Validation rules are pure functions in `utils/validation.ts`. Details and trade-offs: [docs/APPROACH.md](docs/APPROACH.md).
 
 ## Data Storage
-Tickets (with embedded comments) are stored as JSON in `localStorage`. See [docs/ER-DIAGRAM.md](docs/ER-DIAGRAM.md).
+Tickets, each with its embedded comments, are stored as a JSON array under the `localStorage` key `support-tickets:v1`. The last comment author is stored separately under `support-tickets:comment-author`. Corrupt or malformed data is ignored rather than crashing the app. The logical model is in [docs/ER-DIAGRAM.md](docs/ER-DIAGRAM.md).
 
 ## Validation
-_To be documented in Iteration 2._
+- **Ticket:** title, description, customer name and order number are required (whitespace-only is rejected); title is at most 100 characters; phone number must have 7–15 digits and may include a leading `+` and the separators space, `( ) - .`
+- **Comment:** author name and comment text are required.
+- Errors appear under the field on submit and clear when that field is edited. If saving fails (e.g. storage full), an error banner is shown.
 
 ## Assumptions
-_To be finalized in Iteration 6._ Initial assumptions are in [docs/SRS.md](docs/SRS.md).
+- There is no authentication, so the comment author is free text entered by the agent.
+- Comments can still be added to resolved tickets; resolved tickets cannot be reopened.
+- Order number is only required to be non-empty; no format is enforced.
+- Timestamps are stored as ISO strings and shown in the browser's locale.
 
 ## Known Limitations
-_To be finalized in Iteration 6._
+- Data lives in one browser only: it is not shared between devices or browsers and can be cleared by the user.
+- There is no router, so URLs are not shareable and a refresh returns to the ticket list.
+- The status filter is not remembered across refreshes.
+- Tickets and comments cannot be edited or deleted, and resolved tickets cannot be reopened.
+- IDs use `crypto.randomUUID()`, which needs a secure context: use `localhost` or HTTPS, not a plain-HTTP network address.
+- No automated tests; the app was verified with type-checking, linting, building and manual testing.
+- `updateTicket` and `getTicketById` exist in the service (as requested in the brief) but the UI does not use them yet.
 
 ## Future Improvements
-_To be finalized in Iteration 6._
+- Backend API and database, with real authentication and comment authorship
+- Routing so tickets have shareable URLs and survive refresh
+- Search, pagination and sorting; reopening, editing and deleting tickets
+- Automated tests (unit tests for the service and validation, component tests for the forms)
+- Accessibility review and a fuller visual design
 
 ## AI Usage
-Claude Code (Anthropic) is used as a coding assistant.
+I used **Claude Code** (Anthropic's coding assistant, running Claude Sonnet 5) to build this project. The code and documentation in this repository were **generated by Claude**; I did not hand-write them.
 
-- **Helped with:** project scaffolding, documentation drafts, and (in later iterations) feature code.
-- **Prompts/tasks:** I gave Claude the full assessment brief and an iteration plan (setup → data model → creation → list/details → comments → resolve/filter → review), and asked it to implement one iteration at a time.
-- **Generated by AI:** the Iteration 0 scaffold and all documentation in this repo were generated by Claude and then reviewed by me.
-- **Corrections / my decisions:** _to be updated as iterations progress._
+**What I gave it.** The full assessment brief, and an iteration plan that I approved: setup, data model and storage, ticket creation, list and details, comments, resolve and filter, final review. I told it to implement one iteration at a time, keep the design simple (no backend, router or UI library), and stop after each iteration with a commit message and PR description.
+
+**What Claude did.** Scaffolded the Vite project, wrote the TypeScript types, the localStorage service, validation, all components and styles, and all documentation, including this README.
+
+**What I did.** I reviewed each iteration, tested it manually in the browser, and committed, pushed and merged each one as a separate pull request. I made these decisions myself: the technology and scope constraints, the iteration structure and the documentation set from the brief; keeping the AI instruction files (`CLAUDE.md`, `AGENTS.md`) and the plan file out of git; and removing time-estimate wording from the docs. I chose not to have Claude run automated browser tests, so functional testing was manual.
+
+**Corrections needed along the way** (found by Claude's own checks or by my manual testing):
+- An edit made by Claude to `package.json` added a byte-order mark that broke the build; caught by running the build and fixed.
+- Tickets were saved to `localStorage` but the page did not read them back, so they seemed to disappear on refresh. I reported it and Claude fixed it.
+- The "Resolve ticket" button was invisible (white on white) because of CSS rule order. I reported it with a screenshot and Claude fixed it.
+- During the final review Claude found that malformed data in storage (for example a ticket missing its comments) could crash the UI, and added a shape check. It also corrected documentation that described a `useTickets` hook that was never built.
 
 ## Assessment Notes
-Scope is intentionally small: no backend, auth, or UI library.
+Scope is intentionally small: no backend, authentication, or UI library. The application source is in `src/`; the reasoning behind the main decisions is in [docs/APPROACH.md](docs/APPROACH.md).

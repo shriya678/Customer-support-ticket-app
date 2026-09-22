@@ -8,12 +8,30 @@ export type TicketChanges = Partial<
   Omit<Ticket, 'id' | 'comments' | 'createdAt' | 'updatedAt'>
 >
 
+/** Cheap shape check so malformed stored entries can't crash the UI. */
+function isTicket(value: unknown): value is Ticket {
+  if (typeof value !== 'object' || value === null) return false
+  const ticket = value as Record<string, unknown>
+  return (
+    typeof ticket.id === 'string' &&
+    typeof ticket.title === 'string' &&
+    typeof ticket.description === 'string' &&
+    typeof ticket.customerName === 'string' &&
+    typeof ticket.orderNumber === 'string' &&
+    typeof ticket.phoneNumber === 'string' &&
+    typeof ticket.createdAt === 'string' &&
+    typeof ticket.updatedAt === 'string' &&
+    (ticket.status === 'open' || ticket.status === 'resolved') &&
+    Array.isArray(ticket.comments)
+  )
+}
+
 function readTickets(): Ticket[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? (parsed as Ticket[]) : []
+    return Array.isArray(parsed) ? parsed.filter(isTicket) : []
   } catch {
     // Missing, blocked or corrupt storage should not crash the app.
     return []
